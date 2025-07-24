@@ -662,13 +662,13 @@
 
 	var/secLevelStr = code_name_eng[security_level]
 	if(security_level == SEC_LEVEL_GREEN)
-		secLevelStr = "<font color='green'><b>&#9899;</b></font>"
+		secLevelStr = {"<div class="circle circle_green"></div>"}
 	if(security_level == SEC_LEVEL_BLUE)
-		secLevelStr = "<font color='blue'><b>&#9899;</b></font>"
+		secLevelStr = {"<div class="circle circle_blue"></div>"}
 	if(security_level == SEC_LEVEL_RED)
-		secLevelStr = "<font color='red'><b>&#9899;</b></font>"
+		secLevelStr = {"<div class="circle circle_red"></div>"}
 	if(security_level == SEC_LEVEL_DELTA)
-		secLevelStr = "<font color='purple'><b>&Delta;</b></font>"
+		secLevelStr = {"<div class="triangle triangle_purple"></div>"}
 	data["securityLevel"] = secLevelStr
 
 	data["new_Message"] = newmessage
@@ -893,8 +893,9 @@
 			U.unset_machine()
 			ui.close()
 			return 0
-		if("Refresh")//Refresh, goes to the end of the proc.
-		if("Return")//Return
+		if("Refresh") //Refresh, goes to the end of the proc.
+			EMPTY_BLOCK_GUARD
+		if("Return") //Return
 			if(mode<=9)
 				mode = 0
 			else
@@ -1034,7 +1035,6 @@
 					if(src.hidden_uplink && hidden_uplink.check_trigger(U, lowertext(t), lowertext(lock_code)))
 						to_chat(U, "The PDA softly beeps.")
 						ui.close()
-					else
 
 				set_ringtone(Tone, t)
 				play_ringtone(ignore_presence = TRUE)
@@ -1167,7 +1167,7 @@
 
 		if("Staff Salary")
 			mode = 73
-			subordinate_staff = my_subordinate_staff(ownrank)
+			subordinate_staff = SSeconomy.my_subordinate_staff(ownrank)
 
 		if("Change insurance price")
 			if(!check_permission_to_change_insurance_price())
@@ -2010,7 +2010,7 @@
 	playsound(L, 'sound/machines/twobeep.ogg', VOL_EFFECTS_MASTER)
 
 /obj/item/device/pda/proc/check_rank(rank)
-	if((rank in command_positions) || (rank == "Quartermaster"))
+	if((rank in SSjob.heads_positions) || (rank == JOB_QM))
 		boss_PDA = 1
 	else
 		boss_PDA = 0

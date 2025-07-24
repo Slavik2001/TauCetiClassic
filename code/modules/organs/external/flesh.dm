@@ -24,8 +24,7 @@
 	return ..()
 
 /datum/bodypart_controller/proc/adjust_pumped(value, cap=null)
-	// TO-DO: either give other species different limb types, or add some HAS_MUSCLES specie flag.
-	if(!(BP.species.name in list(HUMAN, UNATHI, TAJARAN, SKRELL, VOX)))
+	if(!BP.species.flags[HAS_MUSCLES])
 		return 0
 
 	if(isnull(cap) || cap > BP.max_pumped)
@@ -276,10 +275,10 @@ This function completely restores a damaged organ to perfect condition.
 		IO.rejuvenate()
 
 	// remove embedded objects and drop them on the floor
-	for(var/obj/implanted_object in BP.implants)
+	for(var/obj/implanted_object in BP.embedded_objects)
 		if(!istype(implanted_object,/obj/item/weapon/implant))	// We don't want to remove REAL implants. Just shrapnel etc.
 			implanted_object.forceMove(BP.owner.loc)
-			BP.implants -= implanted_object
+			BP.embedded_objects -= implanted_object
 
 	BP.owner.updatehealth()
 	BP.owner.sec_hud_set_implants()

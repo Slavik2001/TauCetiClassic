@@ -43,7 +43,7 @@
 	var/list/children = list()        // Sub-limbs.
 	var/list/bodypart_organs = list() // Internal organs of this body part
 	var/sabotaged = 0                 // If a prosthetic limb is emagged, it will detonate when it fails.
-	var/list/implants = list()        // Currently implanted objects.
+	var/list/embedded_objects = list() // Currently implanted objects. Includes embed objects, implants like mindshield, borers...
 	var/bandaged = FALSE              // Are there any visual bandages on this bodypart
 	var/is_stump = FALSE              // Is it just a leftover of a destroyed bodypart
 	var/leaves_stump = TRUE           // Does this bodypart leaves a stump when destroyed
@@ -523,6 +523,12 @@ Note that amputating the affected organ does in fact remove the infection from t
 	if(cannot_amputate || !owner)
 		return
 
+	// todo: need to write better logic for dismembering and embedded_objects
+	for(var/obj/item/weapon/implant/implanted_object in embedded_objects)
+		qdel(implanted_object)
+		if(prob(25))
+			new /obj/item/weapon/implant/meltdown(owner.loc)
+
 	owner.bodyparts -= src
 	owner.bodyparts_by_name -= body_zone
 	owner.bad_bodyparts -= src
@@ -655,6 +661,7 @@ Note that amputating the affected organ does in fact remove the infection from t
 
 	owner.updatehealth()
 	owner.update_body(body_zone)
+	owner.update_underwear()
 
 	if(!should_delete)
 		forceMove(owner.loc)
@@ -845,9 +852,9 @@ Note that amputating the affected organ does in fact remove the infection from t
 	owner.throw_alert("embeddedobject", /atom/movable/screen/alert/embeddedobject)
 
 	supplied_wound.embedded_objects += W
-	implants += W
+	embedded_objects += W
 	owner.sec_hud_set_implants()
-	owner.embedded_flag = 1
+	owner.embedded_flag = TRUE
 	owner.verbs += /mob/proc/yank_out_object
 	W.add_blood(owner)
 	if(ismob(W.loc))
@@ -1112,6 +1119,9 @@ Note that amputating the affected organ does in fact remove the infection from t
 			-EYES_LAYER
 		)
 
+		if(owner && HAS_TRAIT(owner, TRAIT_PLUVIAN_BLESSED))
+			eyes_static_layer.color = "#88ffff"
+
 		. += eyes_static_layer
 
 	if(species.eyes_colorable_layer)
@@ -1123,7 +1133,9 @@ Note that amputating the affected organ does in fact remove the infection from t
 
 		eyes_colorable_layer.color = rgb(r_eyes, g_eyes, b_eyes)
 		if(owner)
-			if((HULK in owner.mutations) || (LASEREYES in owner.mutations) || iszombie(owner) || HAS_TRAIT(owner, TRAIT_CULT_EYES)) // todo: red eyes trait
+			if(HAS_TRAIT(owner, TRAIT_PLUVIAN_BLESSED))
+				eyes_colorable_layer.color = "#00ffff"
+			else if((HULK in owner.mutations) || (LASEREYES in owner.mutations) || iszombie(owner) || HAS_TRAIT(owner, TRAIT_CULT_EYES)) // todo: red eyes trait
 				eyes_colorable_layer.color = "#ff0000"
 
 			if(HAS_TRAIT(owner, TRAIT_GLOWING_EYES))
